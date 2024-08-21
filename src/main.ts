@@ -1,7 +1,22 @@
 import "./style.css";
-import { KameleoonClient } from "@kameleoon/javascript-sdk";
+import { EventType, KameleoonClient } from "@kameleoon/javascript-sdk";
 import { animate, createBall } from "./helpers";
-import { featureKey, siteCode, visitorCode } from "./constants";
+import { State } from "./types";
+
+// -- Constants values
+export const siteCode = "my_site_code";
+export const featureKey = "my_feature_key";
+
+// -- Define the default state
+const state: State = {
+  ball_size: 0,
+  ball_speed: 0,
+  balls_amount: 0,
+  // - Randomize color on bounce
+  randomize_on_bounce: true,
+  ball_color: "transparent",
+  title_text: "Bouncing balls",
+};
 
 // -- Configure the SDK
 const client = new KameleoonClient({ siteCode });
@@ -10,61 +25,35 @@ async function init(): Promise<void> {
   // -- Initialize the SDK
   await client.initialize();
 
+  // -- Get the visitor code
+  const visitorCode = client.getVisitorCode();
+
   // -- Reload the page when the configuration is updated
-  client.onConfigurationUpdate(() => {
+  client.onEvent(EventType.ConfigurationUpdate, () => {
     window.location.reload();
   });
 
-  // -- Feature variables:
-  // - Ball size (number)
-  const ballSize = client.getFeatureFlagVariable({
-    visitorCode,
-    featureKey,
-    variableKey: "ball_size",
-  }).value as number;
-  // - Ball color (string)
-  const ballColor = client.getFeatureFlagVariable({
-    visitorCode,
-    featureKey,
-    variableKey: "ball_color",
-  }).value as string;
-  // - Ball speed (number)
-  const ballSpeed = client.getFeatureFlagVariable({
-    visitorCode,
-    featureKey,
-    variableKey: "ball_speed",
-  }).value as number;
-  // - Number of balls (number)
-  const ballsAmount = client.getFeatureFlagVariable({
-    visitorCode,
-    featureKey,
-    variableKey: "balls_amount",
-  }).value as number;
-  // - Randomize on bounce (boolean) - whether the color of the ball should change on bounce
-  const randomizeOnBounce = client.getFeatureFlagVariable({
-    visitorCode,
-    featureKey,
-    variableKey: "randomize_on_bounce",
-  }).value as boolean;
-  // - Screen title (string)
-  const screenTitle = client.getFeatureFlagVariable({
-    visitorCode,
-    featureKey,
-    variableKey: "title_text",
-  }).value as string;
+  // -- Get the feature flag variables
+  const variables = client.getFeatureFlagVariables(visitorCode, featureKey);
 
-  const titleElement = document.querySelector("#title > p")!;
-  titleElement.textContent = screenTitle;
+  // -- Update the state with the feature flag variables
+  variables.forEach(({ key, value, type }) => {
+    console.log({ key, value, type });
+    state[key] = value as typeof type;
+  });
 
   // -- Main code --
-  for (let i = 0; i < ballsAmount; i++) {
+  const titleElement = document.querySelector("#title > p")!;
+  titleElement.textContent = state.title_text;
+
+  for (let i = 0; i < state.balls_amount; i++) {
     const ball = createBall({
-      color: ballColor,
-      speed: ballSpeed,
-      size: ballSize,
+      color: state.ball_color,
+      speed: state.ball_speed,
+      size: state.ball_size,
     });
 
-    animate(ball, randomizeOnBounce);
+    animate(ball, state.randomize_on_bounce);
   }
 }
 
