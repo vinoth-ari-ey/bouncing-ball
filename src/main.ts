@@ -38,7 +38,6 @@ async function init(): Promise<void> {
 
   // -- Update the state with the feature flag variables
   variables.forEach(({ key, value, type }) => {
-    console.log({ key, value, type });
     state[key] = value as typeof type;
   });
 
