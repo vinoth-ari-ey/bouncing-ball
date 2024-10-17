@@ -4,8 +4,8 @@ import { animate, createBall } from "./helpers";
 import { State } from "./types";
 
 // -- Constants values
-export const siteCode = "0byr9yahtt";
-export const featureKey = "bb_demo";
+export const siteCode = "na3r8z406r";
+export const featureKey = "bouncing_ball_demo";
 
 // -- Define the default state
 const state: State = {
@@ -19,7 +19,11 @@ const state: State = {
 };
 
 // -- Configure the SDK
-const client = new KameleoonClient({ siteCode });
+// const client = new KameleoonClient({ siteCode });
+const configuration = {
+   updateInterval: 1,
+};
+const client = new KameleoonClient({ siteCode, configuration });
 
 async function init(): Promise<void> {
   // -- Initialize the SDK
